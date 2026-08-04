@@ -30,3 +30,7 @@ Thumbs.db
 
 # Mac archive metadata
 __MACOSX/
+.env
+.venv/
+__pycache__/
+AI Engineer Internship - Assignment material/

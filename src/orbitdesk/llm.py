@@ -1,10 +1,24 @@
+
 import os
+
 from dotenv import load_dotenv
 from groq import Groq
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+api_key = os.getenv("GROQ_API_KEY")
+
+if not api_key:
+    try:
+        import streamlit as st
+        api_key = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass
+
+if not api_key:
+    raise ValueError("GROQ_API_KEY is not configured.")
+
+client = Groq(api_key=api_key)
 
 
 def generate_answer(question, evidence):

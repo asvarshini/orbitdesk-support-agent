@@ -1,5 +1,8 @@
 \# 🤖 OrbitDesk Support Agent
+## 🌐 Live Demo
 
+🚀 **Try OrbitDesk Support Agent:**
+https://orbitdesk-support-agent-hsmgzuh6c4y5w9y5h6exk7.streamlit.app/
 
 
 An AI-powered support assistant that answers OrbitDesk questions using \*\*Retrieval-Augmented Generation (RAG)\*\* and a pre-trained \*\*LLM\*\*.

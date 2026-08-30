@@ -39,7 +39,7 @@ def answer_question(question):
 
 if __name__ == "__main__":
 
-    question = "Why did my scheduled export fail?"    
+    question = "My sync is not working "    
     result = answer_question(question)
 
     print("\nResult:")

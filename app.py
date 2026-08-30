@@ -1,17 +1,13 @@
-
 import sys
 from pathlib import Path
 
 import streamlit as st
 
-# Add the OrbitDesk source directory to Python's import path
 BASE_DIR = Path(__file__).resolve().parent
 ORBITDESK_DIR = BASE_DIR / "src" / "orbitdesk"
-
 sys.path.insert(0, str(ORBITDESK_DIR))
 
 from pipeline import answer_question
-
 
 st.set_page_config(
     page_title="OrbitDesk Support Agent",
@@ -20,8 +16,12 @@ st.set_page_config(
 )
 
 st.title("🤖 OrbitDesk Support Agent")
-st.write(
-    "Ask a question about OrbitDesk and get a knowledge-grounded support response."
+st.write("Ask a question about OrbitDesk and get a knowledge-grounded support response.")
+
+st.caption(
+    "🛡️ Support boundaries: I can explain product behavior and troubleshoot, "
+    "but I cannot make account changes, view secrets, create credentials, "
+    "issue refunds, contact recipients, or guarantee recovery of deleted data."
 )
 
 question = st.text_area(
@@ -31,37 +31,62 @@ question = st.text_area(
 )
 
 if st.button("Ask OrbitDesk", type="primary"):
-
     if not question.strip():
         st.warning("Please enter a question.")
     else:
         with st.spinner("Processing your question..."):
-
             try:
                 result = answer_question(question.strip())
 
-                st.subheader("Classification")
-                st.info(result["classification"])
+                # Top metrics row
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("Classification", result.get("classification", "unknown").upper())
+                with col2:
+                    conf = result.get("confidence", 0)
+                    st.metric("Confidence", f"{conf:.2f}")
+                with col3:
+                    needs_human = result.get("requires_human", False)
+                    st.metric("Needs Human", "YES" if needs_human else "NO")
 
-                if result["classification"] == "ANSWERABLE":
+                # Reason
+                if result.get("reason"):
+                    st.caption(f"**Reason:** {result['reason']}")
 
-                    st.subheader("Answer")
-                    st.write(result["answer"])
+                # Warnings
+                for warning in result.get("warnings", []):
+                    st.warning(f"⚠️ {warning}")
 
-                    st.subheader("Retrieved Evidence")
+                # Clarification question
+                if result.get("clarification_question"):
+                    st.info(f"**Clarification needed:** {result['clarification_question']}")
 
-                    for evidence in result.get("evidence", []):
-                        with st.expander(
-                            f"{evidence.get('document_id', 'Unknown document')} "
-                            f"— Score: {evidence.get('score', 0):.3f}"
-                        ):
-                            st.write(evidence.get("passage", ""))
+                # Answer
+                st.subheader("Answer")
+                st.write(result.get("answer", "No answer provided."))
 
-                else:
-                    st.subheader("Response")
-                    st.write(result["message"])
+                # Escalation banner
+                if result.get("classification") == "requires_escalation":
+                    st.error(
+                        "This request requires human approval or elevated permissions. "
+                        "The support assistant cannot complete this action."
+                    )
+                    # Try to extract role from answer
+                    answer_text = result.get("answer", "")
+                    if "Owner" in answer_text or "Admin" in answer_text:
+                        st.write("Check the answer above for the required role/team.")
+
+                # Sources
+                sources = result.get("sources", [])
+                if sources:
+                    st.subheader("Sources")
+                    for src in sources:
+                        sid = src.get("source_id", "Unknown")
+                        passage = src.get("passage", "")
+                        st.write(f"**{sid}**")
+                        st.write(passage[:600] + "..." if len(passage) > 600 else passage)
+                        st.divider()
 
             except Exception as e:
                 st.error("An error occurred while processing the question.")
                 st.exception(e)
-

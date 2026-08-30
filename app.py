@@ -38,7 +38,7 @@ if st.button("Ask OrbitDesk", type="primary"):
             try:
                 result = answer_question(question.strip())
 
-                # Top metrics row
+                # Top row metrics
                 col1, col2, col3 = st.columns(3)
                 with col1:
                     st.metric("Classification", result.get("classification", "unknown").upper())
@@ -71,10 +71,6 @@ if st.button("Ask OrbitDesk", type="primary"):
                         "This request requires human approval or elevated permissions. "
                         "The support assistant cannot complete this action."
                     )
-                    # Try to extract role from answer
-                    answer_text = result.get("answer", "")
-                    if "Owner" in answer_text or "Admin" in answer_text:
-                        st.write("Check the answer above for the required role/team.")
 
                 # Sources
                 sources = result.get("sources", [])
